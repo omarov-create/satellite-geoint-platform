@@ -1,0 +1,39 @@
+"""Frontend Configuration - إعدادات الـ Frontend"""
+
+{
+  "name": "satellite-geoint-frontend",
+  "version": "1.0.0",
+  "description": "God's Eye View - Advanced Satellite Intelligence Platform",
+  "private": true,
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "typescript": "^5.0.0",
+    "deck.gl": "^14.0.0",
+    "mapbox-gl": "^2.15.0",
+    "cesium": "^1.107.0",
+    "axios": "^1.4.0",
+    "zustand": "^4.3.0",
+    "tailwindcss": "^3.3.0",
+    "framer-motion": "^10.12.0",
+    "recharts": "^2.7.0",
+    "react-router-dom": "^6.12.0",
+    "socket.io-client": "^4.5.0",
+    "leaflet": "^1.9.0",
+    "react-leaflet": "^4.1.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.0.0",
+    "vite": "^4.3.0",
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
+    "autoprefixer": "^10.4.0",
+    "postcss": "^8.4.0"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "lint": "eslint src --ext ts,tsx"
+  }
+}
