@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🛰️ God's Eye View - منصة الأقمار الصناعية</title>
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 100%);
+            color: #fff;
+            height: 100vh;
+            overflow: hidden;
+            direction: rtl;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            height: 100vh;
+            gap: 0;
+        }
+
+        .map-container {
+            position: relative;
+            background: #000;
+        }
+
+        #map {
+            width: 100%;
+            height: 100%;
+        }
+
+        .sidebar {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            padding: 20px;
+            overflow-y: auto;
+            border-left: 2px solid #667eea;
+            box-shadow: -5px 0 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .sidebar h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .search-box {
+            margin-bottom: 20px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            background: #2d2d44;
+            color: #fff;
+            font-size: 13px;
+            margin-bottom: 10px;
+        }
+
+        .search-box input::placeholder {
+            color: #999;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #764ba2;
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.3);
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 10px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .panel {
+            background: #2d2d44;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+        }
+
+        .panel h3 {
+            color: #9da5f5;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .entity-item {
+            background: #3d3d54;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            font-size: 12px;
+            border-left: 3px solid #51cf66;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .entity-item:hover {
+            background: #4d4d64;
+            border-left-color: #ffa94d;
+        }
+
+        .entity-item.threat {
+            border-left-color: #ff6b6b;
+        }
+
+        .entity-name {
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 4px;
+        }
+
+        .entity-info {
+            color: #bbb;
+            font-size: 11px;
+        }
+
+        .threat-level {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+
+        .threat-high {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        .threat-medium {
+            background: #ffa94d;
+            color: white;
+        }
+
+        .threat-low {
+            background: #51cf66;
+            color: white;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .stat-box {
+            background: #3d3d54;
+            padding: 12px;
+            border-radius: 6px;
+            text-align: center;
+            border: 1px solid #667eea;
+        }
+
+        .stat-number {
+            font-size: 20px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: #999;
+            margin-top: 5px;
+        }
+
+        .alert-item {
+            background: #ff6b6b;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            font-size: 12px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+
+        .alert-title {
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+
+        .floating-menu {
+            position: absolute;
+            bottom: 30px;
+            left: 30px;
+            background: #667eea;
+            padding: 15px 20px;
+            border-radius: 50px;
+            color: white;
+            font-size: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            z-index: 10;
+        }
+
+        .marker {
+            width: 30px;
+            height: 30px;
+            background: #667eea;
+            border-radius: 50%;
+            border: 3px solid white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            box-shadow: 0 0 15px rgba(102, 126, 234, 0.5);
+        }
+
+        .marker.threat {
+            background: #ff6b6b;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 49%, 100% { opacity: 1; }
+            50%, 99% { opacity: 0.6; }
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #999;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #667eea;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #2d2d44;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #764ba2;
+        }
+
+        .popup-content {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            color: #333;
+            min-width: 200px;
+        }
+
+        .popup-title {
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+
+        .popup-info {
+            font-size: 13px;
+            margin-bottom: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+                grid-template-rows: 1fr 300px;
+            }
+
+            .sidebar {
+                border-left: none;
+                border-top: 2px solid #667eea;
+                max-height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="map-container">
+            <div id="map"></div>
+            <div class="floating-menu">
+                🛰️ God's Eye View<br>
+                <span style="font-size: 11px;">منصة الأقمار الصناعية</span>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <h2>🔍 الاستخبارات</h2>
+
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="ابحث عن موقع..." onkeypress="handleSearch(event)">
+                <button onclick="searchLocation()" style="width: 100%;">بحث</button>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <div class="stat-number" id="entityCount">0</div>
+                    <div class="stat-label">كيانات</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number" id="threatCount">0</div>
+                    <div class="stat-label">تهديدات</div>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button onclick="loadEntities()">🔄 تحديث</button>
+                <button onclick="loadAlerts()">⚠️ تنبيهات</button>
+                <button onclick="toggleSatellite()">📡 أقمار</button>
+                <button onclick="clearMap()">🗑️ مسح</button>
+            </div>
+
+            <div class="panel">
+                <h3>📍 الكيانات المكتشفة</h3>
+                <div id="entitiesList" class="loading">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h3>⚠️ التنبيهات النشطة</h3>
+                <div id="alertsList" class="loading">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize map
+        mapboxgl.accessToken = 'pk.eyJ1IjoiZXhhbXBsZSIsImEiOiJjbGV4YW1wbGUifQ.example';
+        
+        let map;
+        let markers = [];
+        let satellites = true;
+
+        function initMap() {
+            map = new mapboxgl.Map({
+                container: 'map',
+                style: 'mapbox://styles/mapbox/dark-v11',
+                center: [30, 25],
+                zoom: 3,
+                pitch: 45,
+                bearing: -60
+            });
+
+            map.on('load', () => {
+                loadEntities();
+                loadAlerts();
+                // تحديث البيانات كل 10 ثواني
+                setInterval(loadEntities, 10000);
+                setInterval(loadAlerts, 15000);
+            });
+        }
+
+        function loadEntities() {
+            // محاكاة بيانات الكيانات
+            const entities = [
+                {
+                    id: 1,
+                    name: 'سفينة شحن ألفا',
+                    type: 'ship',
+                    lat: 35.1234,
+                    lng: 51.5678,
+                    speed: 15.5,
+                    heading: 285,
+                    threat: 'low',
+                    icon: '🚢'
+                },
+                {
+                    id: 2,
+                    name: 'رحلة تجارية',
+                    type: 'aircraft',
+                    lat: 40.7128,
+                    lng: -74.0060,
+                    speed: 450,
+                    altitude: 35000,
+                    threat: 'low',
+                    icon: '✈️'
+                },
+                {
+                    id: 3,
+                    name: 'منشأة استراتيجية',
+                    type: 'facility',
+                    lat: 37.7749,
+                    lng: -122.4194,
+                    threat: 'medium',
+                    icon: '🏢'
+                },
+                {
+                    id: 4,
+                    name: 'سفينة غير محددة الهوية',
+                    type: 'ship',
+                    lat: 28.2345,
+                    lng: 45.6789,
+                    speed: 0,
+                    threat: 'high',
+                    icon: '🚢'
+                },
+                {
+                    id: 5,
+                    name: 'طائرة مراقبة',
+                    type: 'aircraft',
+                    lat: 33.3123,
+                    lng: 44.3612,
+                    speed: 250,
+                    altitude: 5000,
+                    threat: 'medium',
+                    icon: '🚁'
+                }
+            ];
+
+            clearMarkers();
+            const entitiesHtml = entities.map(entity => `
+                <div class="entity-item ${entity.threat === 'high' ? 'threat' : ''}" onclick="focusEntity(${entity.lat}, ${entity.lng})">
+                    <div class="entity-name">${entity.icon} ${entity.name}</div>
+                    <div class="entity-info">
+                        ${entity.type === 'ship' ? `السرعة: ${entity.speed} عقدة` : ''}
+                        ${entity.type === 'aircraft' ? `الارتفاع: ${entity.altitude}م` : ''}
+                    </div>
+                    <div class="threat-level threat-${entity.threat}">
+                        ${getThreatLabel(entity.threat)}
+                    </div>
+                </div>
+            `).join('');
+
+            document.getElementById('entitiesList').innerHTML = entitiesHtml;
+            document.getElementById('entityCount').textContent = entities.length;
+
+            // إضافة العلامات على الخريطة
+            entities.forEach(entity => {
+                const el = document.createElement('div');
+                el.className = `marker ${entity.threat === 'high' ? 'threat' : ''}`;
+                el.textContent = entity.icon;
+                el.style.cursor = 'pointer';
+                el.onclick = () => showPopup(entity);
+
+                new mapboxgl.Marker(el)
+                    .setLngLat([entity.lng, entity.lat])
+                    .setPopup(new mapboxgl.Popup({ offset: 25 }).setHTML(`
+                        <div class="popup-content">
+                            <div class="popup-title">${entity.name}</div>
+                            <div class="popup-info">النوع: ${entity.type}</div>
+                            <div class="popup-info">التهديد: ${getThreatLabel(entity.threat)}</div>
+                            ${entity.speed ? `<div class="popup-info">السرعة: ${entity.speed}</div>` : ''}
+                        </div>
+                    `))
+                    .addTo(map);
+            });
+        }
+
+        function loadAlerts() {
+            const alerts = [
+                {
+                    id: 1,
+                    title: 'نشاط غير عادي',
+                    description: 'انحراف السفينة عن المسار المتوقع',
+                    severity: 'high',
+                    time: 'منذ 2 دقيقة'
+                },
+                {
+                    id: 2,
+                    title: 'تغييرات في المنشأة',
+                    description: 'كشف نشاط بناء جديد',
+                    severity: 'medium',
+                    time: 'منذ 15 دقيقة'
+                },
+                {
+                    id: 3,
+                    title: 'منطقة مقيدة',
+                    description: 'كيان دخل منطقة محظورة',
+                    severity: 'high',
+                    time: 'منذ 5 دقائق'
+                }
+            ];
+
+            const alertsHtml = alerts.map(alert => `
+                <div class="alert-item">
+                    <div class="alert-title">${alert.title}</div>
+                    <div style="font-size: 11px; margin-bottom: 4px;">${alert.description}</div>
+                    <div style="font-size: 10px; color: rgba(255,255,255,0.7);">${alert.time}</div>
+                </div>
+            `).join('');
+
+            document.getElementById('alertsList').innerHTML = alertsHtml;
+            document.getElementById('threatCount').textContent = alerts.length;
+        }
+
+        function getThreatLabel(level) {
+            const labels = {
+                high: '🔴 عالية',
+                medium: '🟡 متوسطة',
+                low: '🟢 منخفضة'
+            };
+            return labels[level] || level;
+        }
+
+        function focusEntity(lat, lng) {
+            map.flyTo({
+                center: [lng, lat],
+                zoom: 8,
+                duration: 1000
+            });
+        }
+
+        function showPopup(entity) {
+            new mapboxgl.Popup()
+                .setLngLat([entity.lng, entity.lat])
+                .setHTML(`
+                    <div class="popup-content">
+                        <div class="popup-title">${entity.name}</div>
+                        <div class="popup-info">النوع: ${entity.type}</div>
+                        <div class="popup-info">التهديد: ${getThreatLabel(entity.threat)}</div>
+                    </div>
+                `)
+                .addTo(map);
+        }
+
+        function clearMarkers() {
+            const markersOnPage = document.querySelectorAll('.mapboxgl-marker');
+            markersOnPage.forEach(marker => marker.remove());
+        }
+
+        function searchLocation() {
+            const input = document.getElementById('searchInput').value;
+            if (!input) return;
+            // محاكاة البحث
+            alert(`البحث عن: ${input}`);
+        }
+
+        function handleSearch(event) {
+            if (event.key === 'Enter') {
+                searchLocation();
+            }
+        }
+
+        function toggleSatellite() {
+            satellites = !satellites;
+            if (satellites) {
+                alert('📡 تم تفعيل بيانات الأقمار الصناعية');
+            } else {
+                alert('📡 تم تعطيل بيانات الأقمار الصناعية');
+            }
+        }
+
+        function clearMap() {
+            clearMarkers();
+            document.getElementById('entitiesList').innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+            document.getElementById('alertsList').innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+        }
+
+        // بدء التطبيق
+        window.addEventListener('DOMContentLoaded', initMap);
+    </script>
+</body>
+</html>
