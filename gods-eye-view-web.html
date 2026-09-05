@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🛰️ God's Eye View - منصة الأقمار الصناعية</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 100%);
+            color: #fff;
+            height: 100vh;
+            overflow: hidden;
+            direction: rtl;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            height: 100vh;
+            gap: 0;
+        }
+
+        .map-container {
+            position: relative;
+            background: linear-gradient(45deg, #1a1a3f 0%, #2d2d5f 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        .globe {
+            width: 400px;
+            height: 400px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #4a9eff 0%, #1e3a8a 50%, #0f172a 100%);
+            box-shadow: 0 0 50px rgba(74, 158, 255, 0.3), inset -20px -20px 50px rgba(0, 0, 0, 0.5);
+            position: relative;
+            animation: rotate 20s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotateY(0deg) rotateX(20deg); }
+            to { transform: rotateY(360deg) rotateX(20deg); }
+        }
+
+        .marker-point {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .marker-point.ship {
+            background: #00ff00;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.6);
+        }
+
+        .marker-point.aircraft {
+            background: #ff6b6b;
+            box-shadow: 0 0 20px rgba(255, 107, 107, 0.6);
+        }
+
+        .marker-point.facility {
+            background: #ffa94d;
+            box-shadow: 0 0 20px rgba(255, 169, 77, 0.6);
+        }
+
+        .marker-point:hover {
+            width: 16px;
+            height: 16px;
+            margin-left: -2px;
+            margin-top: -2px;
+        }
+
+        .floating-info {
+            position: absolute;
+            bottom: 30px;
+            left: 30px;
+            background: rgba(102, 126, 234, 0.9);\n            padding: 20px;\n            border-radius: 15px;\n            color: white;\n            font-size: 13px;\n            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);\n            z-index: 10;\n            backdrop-filter: blur(10px);\n        }\n\n        .floating-info h3 {\n            font-size: 16px;\n            margin-bottom: 8px;\n            display: flex;\n            align-items: center;\n            gap: 8px;\n        }\n\n        .stat-mini {\n            display: inline-block;\n            background: rgba(255, 255, 255, 0.1);\n            padding: 4px 8px;\n            border-radius: 4px;\n            font-size: 11px;\n            margin-right: 5px;\n        }\n\n        .sidebar {\n            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);\n            padding: 20px;\n            overflow-y: auto;\n            border-left: 3px solid #667eea;\n            box-shadow: -5px 0 15px rgba(0, 0, 0, 0.5);\n            display: flex;\n            flex-direction: column;\n        }\n\n        .sidebar h2 {\n            color: #667eea;\n            margin-bottom: 20px;\n            font-size: 18px;\n            display: flex;\n            align-items: center;\n            gap: 8px;\n            border-bottom: 2px solid #667eea;\n            padding-bottom: 10px;\n        }\n\n        .search-section {\n            margin-bottom: 20px;\n        }\n\n        input {\n            width: 100%;\n            padding: 10px;\n            border: 2px solid #667eea;\n            border-radius: 8px;\n            background: #2d2d44;\n            color: #fff;\n            font-size: 12px;\n            margin-bottom: 8px;\n            font-family: inherit;\n        }\n\n        input:focus {\n            outline: none;\n            border-color: #764ba2;\n            box-shadow: 0 0 10px rgba(102, 126, 234, 0.3);\n        }\n\n        .btn-group {\n            display: grid;\n            grid-template-columns: 1fr 1fr;\n            gap: 8px;\n            margin-bottom: 20px;\n        }\n\n        button {\n            padding: 10px;\n            background: #667eea;\n            color: white;\n            border: none;\n            border-radius: 8px;\n            cursor: pointer;\n            font-size: 11px;\n            font-weight: bold;\n            transition: all 0.3s;\n            font-family: inherit;\n        }\n\n        button:hover {\n            background: #764ba2;\n            transform: translateY(-2px);\n            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);\n        }\n\n        button:active {\n            transform: translateY(0);\n        }\n\n        .full-width {\n            grid-column: 1 / -1;\n        }\n\n        .section {\n            background: #2d2d44;\n            border-radius: 8px;\n            padding: 15px;\n            margin-bottom: 15px;\n            border-left: 4px solid #667eea;\n            flex: 1;\n            overflow-y: auto;\n        }\n\n        .section h3 {\n            color: #9da5f5;\n            font-size: 13px;\n            margin-bottom: 10px;\n            display: flex;\n            align-items: center;\n            gap: 6px;\n        }\n\n        .stats {\n            display: grid;\n            grid-template-columns: 1fr 1fr;\n            gap: 10px;\n            margin-bottom: 15px;\n        }\n\n        .stat-box {\n            background: #3d3d54;\n            padding: 12px;\n            border-radius: 6px;\n            text-align: center;\n            border: 1px solid #667eea;\n        }\n\n        .stat-number {\n            font-size: 22px;\n            font-weight: bold;\n            color: #667eea;\n        }\n\n        .stat-label {\n            font-size: 11px;\n            color: #999;\n            margin-top: 4px;\n        }\n\n        .item {\n            background: #3d3d54;\n            padding: 10px;\n            border-radius: 6px;\n            margin-bottom: 8px;\n            font-size: 12px;\n            border-left: 3px solid #51cf66;\n            cursor: pointer;\n            transition: all 0.3s;\n        }\n\n        .item:hover {\n            background: #4d4d64;\n            border-left-color: #ffa94d;\n            transform: translateX(-5px);\n        }\n\n        .item.threat {\n            border-left-color: #ff6b6b;\n        }\n\n        .item-name {\n            font-weight: bold;\n            color: #fff;\n            margin-bottom: 4px;\n        }\n\n        .item-info {\n            color: #bbb;\n            font-size: 11px;\n            margin-bottom: 4px;\n        }\n\n        .badge {\n            display: inline-block;\n            padding: 3px 8px;\n            border-radius: 4px;\n            font-size: 10px;\n            font-weight: bold;\n            color: white;\n        }\n\n        .badge-high {\n            background: #ff6b6b;\n        }\n\n        .badge-medium {\n            background: #ffa94d;\n        }\n\n        .badge-low {\n            background: #51cf66;\n        }\n\n        .alert-item {\n            background: #ff6b6b;\n            padding: 10px;\n            border-radius: 6px;\n            margin-bottom: 8px;\n            font-size: 11px;\n            animation: pulse 2s infinite;\n        }\n\n        @keyframes pulse {\n            0%, 100% { opacity: 1; }\n            50% { opacity: 0.8; }\n        }\n\n        .alert-title {\n            font-weight: bold;\n            margin-bottom: 3px;\n        }\n\n        .alert-time {\n            color: rgba(255, 255, 255, 0.7);\n            font-size: 10px;\n        }\n\n        ::-webkit-scrollbar {\n            width: 6px;\n        }\n\n        ::-webkit-scrollbar-track {\n            background: #2d2d44;\n        }\n\n        ::-webkit-scrollbar-thumb {\n            background: #667eea;\n            border-radius: 3px;\n        }\n\n        ::-webkit-scrollbar-thumb:hover {\n            background: #764ba2;\n        }\n\n        .empty {\n            text-align: center;\n            color: #666;\n            padding: 20px;\n            font-size: 12px;\n        }\n\n        @media (max-width: 768px) {\n            .container {\n                grid-template-columns: 1fr;\n                grid-template-rows: 1fr 300px;\n            }\n\n            .sidebar {\n                border-left: none;\n                border-top: 3px solid #667eea;\n                max-height: 300px;\n            }\n\n            .globe {\n                width: 200px;\n                height: 200px;\n            }\n        }\n    </style>\n</head>\n<body>\n    <div class=\"container\">\n        <div class=\"map-container\">\n            <div class=\"globe\" id=\"globe\"></div>\n            <div class=\"floating-info\">\n                <h3>🛰️ God's Eye View</h3>\n                <div>منصة الأقمار الصناعية الحية</div>\n                <div style=\"margin-top: 8px; font-size: 11px;\">\n                    <span class=\"stat-mini\">🚢 <span id=\"shipCount\">0</span> سفن</span>\n                    <span class=\"stat-mini\">✈️ <span id=\"planeCount\">0</span> طائرات</span>\n                </div>\n            </div>\n        </div>\n\n        <div class=\"sidebar\">\n            <h2>🔍 لوحة التحكم</h2>\n\n            <div class=\"search-section\">\n                <input type=\"text\" id=\"searchInput\" placeholder=\"ابحث عن موقع...\">\n                <div class=\"btn-group\">\n                    <button onclick=\"searchLocation()\">🔍 بحث</button>\n                    <button onclick=\"updateData()\">🔄 تحديث</button>\n                    <button class=\"full-width\" onclick=\"showAlerts()\">⚠️ التنبيهات</button>\n                </div>\n            </div>\n\n            <div class=\"stats\">\n                <div class=\"stat-box\">\n                    <div class=\"stat-number\" id=\"totalCount\">5</div>\n                    <div class=\"stat-label\">كيانات مكتشفة</div>\n                </div>\n                <div class=\"stat-box\">\n                    <div class=\"stat-number\" id=\"threatCountDisplay\">3</div>\n                    <div class=\"stat-label\">تهديدات نشطة</div>\n                </div>\n            </div>\n\n            <div class=\"section\">\n                <h3>🚢 السفن والكيانات</h3>\n                <div id=\"entitiesList\" class=\"empty\">جاري التحميل...</div>\n            </div>\n\n            <div class=\"section\" style=\"flex: 0.8;\">\n                <h3>⚠️ التنبيهات</h3>\n                <div id=\"alertsList\" class=\"empty\">لا توجد تنبيهات</div>\n            </div>\n        </div>\n    </div>\n\n    <script>\n        // البيانات الوهمية\n        const entities = [\n            {\n                id: 1,\n                name: 'سفينة شحن ألفا',\n                type: 'ship',\n                speed: 15.5,\n                threat: 'low',\n                icon: '🚢'\n            },\n            {\n                id: 2,\n                name: 'رحلة تجارية',\n                type: 'aircraft',\n                speed: 450,\n                threat: 'low',\n                icon: '✈️'\n            },\n            {\n                id: 3,\n                name: 'منشأة استراتيجية',\n                type: 'facility',\n                threat: 'medium',\n                icon: '🏢'\n            },\n            {\n                id: 4,\n                name: 'سفينة غير محددة',\n                type: 'ship',\n                speed: 0,\n                threat: 'high',\n                icon: '🚢'\n            },\n            {\n                id: 5,\n                name: 'طائرة مراقبة',\n                type: 'aircraft',\n                speed: 250,\n                threat: 'medium',\n                icon: '🛩️'\n            }\n        ];\n\n        const alerts = [\n            {\n                id: 1,\n                title: 'نشاط غير عادي',\n                desc: 'انحراف السفينة عن المسار',\n                time: 'منذ 2 دقيقة'\n            },\n            {\n                id: 2,\n                title: 'تغييرات في المنشأة',\n                desc: 'كشف نشاط بناء جديد',\n                time: 'منذ 15 دقيقة'\n            },\n            {\n                id: 3,\n                title: 'منطقة مقيدة',\n                desc: 'كيان داخل منطقة محظورة',\n                time: 'منذ 5 دقائق'\n            }\n        ];\n\n        let globeRotation = 0;\n\n        function init() {\n            updateData();\n            animateGlobe();\n            // تحديث البيانات كل 10 ثواني\n            setInterval(updateData, 10000);\n        }\n\n        function updateData() {\n            // تحديث الإحصائيات\n            const ships = entities.filter(e => e.type === 'ship').length;\n            const planes = entities.filter(e => e.type === 'aircraft').length;\n            const threats = entities.filter(e => e.threat !== 'low').length;\n\n            document.getElementById('shipCount').textContent = ships;\n            document.getElementById('planeCount').textContent = planes;\n            document.getElementById('totalCount').textContent = entities.length;\n            document.getElementById('threatCountDisplay').textContent = threats;\n\n            // تحديث قائمة الكيانات\n            const html = entities.map(e => `\n                <div class=\"item ${e.threat !== 'low' ? 'threat' : ''}\" onclick=\"selectEntity(${e.id})\">\n                    <div class=\"item-name\">${e.icon} ${e.name}</div>\n                    <div class=\"item-info\">${e.type === 'ship' ? '🌊 سفينة' : e.type === 'aircraft' ? '🛫 طائرة' : '🏗️ منشأة'}</div>\n                    <div>\n                        <span class=\"badge badge-${e.threat}\">\n                            ${e.threat === 'high' ? '🔴 عالية' : e.threat === 'medium' ? '🟡 متوسطة' : '🟢 منخفضة'}\n                        </span>\n                    </div>\n                </div>\n            `).join('');\n            document.getElementById('entitiesList').innerHTML = html;\n        }\n\n        function showAlerts() {\n            const html = alerts.map(a => `\n                <div class=\"alert-item\">\n                    <div class=\"alert-title\">${a.title}</div>\n                    <div style=\"margin-bottom: 4px; font-size: 11px;\">${a.desc}</div>\n                    <div class=\"alert-time\">${a.time}</div>\n                </div>\n            `).join('');\n            document.getElementById('alertsList').innerHTML = html;\n        }\n\n        function searchLocation() {\n            const query = document.getElementById('searchInput').value;\n            if (!query) {\n                alert('يرجى إدخال اسم موقع أو كيان');\n                return;\n            }\n            alert(`🔍 البحث عن: ${query}\\n\\nتم العثور على النتائج المتعلقة`);\n        }\n\n        function selectEntity(id) {\n            const entity = entities.find(e => e.id === id);\n            alert(`📍 الكيان المحدد:\\n\\n${entity.icon} ${entity.name}\\nالنوع: ${entity.type}\\nمستوى التهديد: ${entity.threat}`);\n        }\n\n        function animateGlobe() {\n            const globe = document.getElementById('globe');\n            globeRotation += 0.5;\n            globe.style.transform = `rotateY(${globeRotation}deg) rotateX(20deg)`;\n            requestAnimationFrame(animateGlobe);\n        }\n\n        // بدء التطبيق\n        window.addEventListener('DOMContentLoaded', init);\n    </script>\n</body>\n</html>
