@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📝 تطبيق قائمة المهام المتقدم</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            direction: rtl;
+        }
+
+        .dark-mode {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        }
+
+        .container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 500px;
+            padding: 30px;
+            transition: all 0.3s ease;
+        }
+
+        .dark-mode .container {
+            background: #2d2d44;
+            color: #e0e0e0;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 15px;
+        }
+
+        .dark-mode header {
+            border-bottom-color: #764ba2;
+        }
+
+        h1 {
+            font-size: 28px;
+            color: #667eea;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .dark-mode h1 {
+            color: #9da5f5;
+        }
+
+        .theme-toggle {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .theme-toggle:hover {
+            background: #764ba2;
+            transform: scale(1.05);
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .stat-box {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 12px;
+        }
+
+        .dark-mode .stat-box {
+            background: #3d3d54;
+        }
+
+        .stat-number {
+            font-size: 20px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .dark-mode .stat-number {
+            color: #9da5f5;
+        }
+
+        .input-section {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        input[type="text"],
+        select {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s;
+            direction: rtl;
+            font-family: inherit;
+        }
+
+        .dark-mode input[type="text"],
+        .dark-mode select {
+            background: #3d3d54;
+            border-color: #764ba2;
+            color: #e0e0e0;
+        }
+
+        input[type="text"]:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.3);
+        }
+
+        button {
+            padding: 12px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 8px 15px;
+            background: #f0f0f0;
+            color: #333;
+            border: 2px solid transparent;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s;
+        }
+
+        .dark-mode .filter-btn {
+            background: #3d3d54;
+            color: #e0e0e0;
+        }
+
+        .filter-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .todos-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .todo-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: #f9f9f9;
+            border-left: 4px solid #667eea;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            transition: all 0.3s;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .dark-mode .todo-item {
+            background: #3d3d54;
+            border-left-color: #764ba2;
+        }
+
+        .todo-item.completed {
+            opacity: 0.6;
+        }
+
+        .todo-item.completed .todo-text {
+            text-decoration: line-through;
+            color: #999;
+        }
+
+        .dark-mode .todo-item.completed .todo-text {
+            color: #666;
+        }
+
+        input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .todo-text {
+            flex: 1;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .todo-priority {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .priority-high {
+            background: #ff6b6b;
+        }
+
+        .priority-medium {
+            background: #ffa94d;
+        }
+
+        .priority-low {
+            background: #51cf66;
+        }
+
+        .todo-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-btn {
+            padding: 6px 10px;
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s;
+        }
+
+        .action-btn:hover {
+            background: #ff5252;
+            transform: scale(1.1);
+        }
+
+        .edit-btn {
+            background: #4ecdc4;
+        }
+
+        .edit-btn:hover {
+            background: #44b3aa;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+        }
+
+        .dark-mode .empty-state {
+            color: #666;
+        }
+
+        .empty-state-emoji {
+            font-size: 50px;
+            margin-bottom: 10px;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 12px;
+            color: #999;
+            border-top: 1px solid #e0e0e0;
+            padding-top: 15px;
+        }
+
+        .dark-mode .footer {
+            border-top-color: #3d3d54;
+            color: #666;
+        }
+
+        .export-section {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .export-btn {
+            flex: 1;
+            padding: 8px;
+            font-size: 12px;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .dark-mode ::-webkit-scrollbar-track {
+            background: #3d3d54;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #764ba2;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 22px;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+
+            .input-section {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📝 مهامي</h1>
+            <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+        </header>
+
+        <div class="stats">
+            <div class="stat-box">
+                <div class="stat-number" id="totalCount">0</div>
+                <div>إجمالي المهام</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number" id="completedCount">0</div>
+                <div>المكتملة</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number" id="remainingCount">0</div>
+                <div>المتبقية</div>
+            </div>
+        </div>
+
+        <div class="input-section">
+            <input type="text" id="taskInput" placeholder="أضف مهمة جديدة..." onkeypress="handleKeyPress(event)">
+            <select id="prioritySelect">
+                <option value="low">منخفضة 📗</option>
+                <option value="medium" selected>متوسطة 📙</option>
+                <option value="high">عالية 📕</option>
+            </select>
+            <button onclick="addTask()">إضافة</button>
+        </div>
+
+        <div class="filter-buttons">
+            <button class="filter-btn active" onclick="filterTasks('all')">الكل</button>
+            <button class="filter-btn" onclick="filterTasks('active')">النشطة</button>
+            <button class="filter-btn" onclick="filterTasks('completed')">المكتملة</button>
+            <button class="filter-btn" onclick="filterTasks('high')">عالية الأولوية</button>
+        </div>
+
+        <div class="export-section">
+            <button class="export-btn" onclick="exportTasks()">📥 تصدير</button>
+            <button class="export-btn" onclick="importTasks()">📤 استيراد</button>
+            <button class="export-btn" onclick="clearAll()">🗑️ حذف الكل</button>
+        </div>
+
+        <div class="todos-list" id="todosList"></div>
+
+        <div class="footer">
+            تم إنشاؤه بـ ❤️ | جميع البيانات محفوظة محلياً على جهازك
+        </div>
+    </div>
+
+    <input type="file" id="importFile" accept=".json" style="display: none;" onchange="handleFileImport(event)">
+
+    <script>
+        let todos = [];
+        let currentFilter = 'all';
+        let editingId = null;
+
+        // تحميل البيانات عند بدء التطبيق
+        window.addEventListener('DOMContentLoaded', () => {
+            loadTodos();
+            renderTodos();
+            // تطبيق الوضع الليلي إذا كان محفوظاً
+            if (localStorage.getItem('darkMode') === 'true') {
+                document.body.classList.add('dark-mode');
+                document.querySelector('.theme-toggle').textContent = '☀️';
+            }
+        });
+
+        function addTask() {
+            const input = document.getElementById('taskInput');
+            const priority = document.getElementById('prioritySelect').value;
+            
+            if (!input.value.trim()) {
+                alert('يرجى إدخال مهمة!');
+                return;
+            }
+
+            const todo = {
+                id: Date.now(),
+                text: input.value,
+                completed: false,
+                priority: priority,
+                createdAt: new Date().toLocaleString('ar-SA'),
+                completedAt: null
+            };
+
+            todos.push(todo);
+            saveTodos();
+            renderTodos();
+            input.value = '';
+            input.focus();
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                addTask();
+            }
+        }
+
+        function toggleComplete(id) {
+            const todo = todos.find(t => t.id === id);
+            if (todo) {
+                todo.completed = !todo.completed;
+                todo.completedAt = todo.completed ? new Date().toLocaleString('ar-SA') : null;
+                saveTodos();
+                renderTodos();
+            }
+        }
+
+        function deleteTask(id) {
+            if (confirm('هل تريد حذف هذه المهمة؟')) {
+                todos = todos.filter(t => t.id !== id);
+                saveTodos();
+                renderTodos();
+            }
+        }
+
+        function editTask(id) {
+            const todo = todos.find(t => t.id === id);
+            if (todo) {
+                const newText = prompt('تعديل المهمة:', todo.text);
+                if (newText && newText.trim()) {
+                    todo.text = newText;
+                    saveTodos();
+                    renderTodos();
+                }
+            }
+        }
+
+        function filterTasks(filter) {
+            currentFilter = filter;
+            
+            // تحديث الأزرار النشطة
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            renderTodos();
+        }
+
+        function renderTodos() {
+            const todosList = document.getElementById('todosList');
+            let filtered = todos;
+
+            switch(currentFilter) {
+                case 'active':
+                    filtered = todos.filter(t => !t.completed);
+                    break;
+                case 'completed':
+                    filtered = todos.filter(t => t.completed);
+                    break;
+                case 'high':
+                    filtered = todos.filter(t => t.priority === 'high');
+                    break;
+            }
+
+            updateStats();
+
+            if (filtered.length === 0) {
+                todosList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-emoji">📭</div>
+                        <p>لا توجد مهام ${currentFilter !== 'all' ? 'في هذا التصفية' : 'حالياً'}</p>
+                    </div>
+                `;
+                return;
+            }
+
+            todosList.innerHTML = filtered.map(todo => `
+                <div class="todo-item ${todo.completed ? 'completed' : ''}">
+                    <input type="checkbox" ${todo.completed ? 'checked' : ''} 
+                           onchange="toggleComplete(${todo.id})">
+                    <span class="todo-text">${escapeHtml(todo.text)}</span>
+                    <span class="todo-priority priority-${todo.priority}">
+                        ${getPriorityLabel(todo.priority)}
+                    </span>
+                    <div class="todo-actions">
+                        <button class="action-btn edit-btn" onclick="editTask(${todo.id})">✏️</button>
+                        <button class="action-btn" onclick="deleteTask(${todo.id})">🗑️</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateStats() {
+            const total = todos.length;
+            const completed = todos.filter(t => t.completed).length;
+            const remaining = total - completed;
+
+            document.getElementById('totalCount').textContent = total;
+            document.getElementById('completedCount').textContent = completed;
+            document.getElementById('remainingCount').textContent = remaining;
+        }
+
+        function getPriorityLabel(priority) {
+            const labels = {
+                high: 'عالية',
+                medium: 'متوسطة',
+                low: 'منخفضة'
+            };
+            return labels[priority] || priority;
+        }
+
+        function saveTodos() {
+            localStorage.setItem('todos', JSON.stringify(todos));
+        }
+
+        function loadTodos() {
+            const saved = localStorage.getItem('todos');
+            todos = saved ? JSON.parse(saved) : [];
+        }
+
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+            const isDark = document.body.classList.contains('dark-mode');
+            localStorage.setItem('darkMode', isDark);
+            document.querySelector('.theme-toggle').textContent = isDark ? '☀️' : '🌙';
+        }
+
+        function exportTasks() {
+            const dataStr = JSON.stringify(todos, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `tasks-${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function importTasks() {
+            document.getElementById('importFile').click();
+        }
+
+        function handleFileImport(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    if (confirm('هل تريد استبدال جميع المهام بالمهام المستوردة؟')) {
+                        todos = imported;
+                        saveTodos();
+                        renderTodos();
+                        alert('تم الاستيراد بنجاح!');
+                    }
+                } catch (error) {
+                    alert('خطأ في استيراد الملف!');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function clearAll() {
+            if (confirm('هل أنت متأكد من حذف جميع المهام؟ هذا الإجراء لا يمكن التراجع عنه!')) {
+                todos = [];
+                saveTodos();
+                renderTodos();
+                alert('تم حذف جميع المهام');
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>
